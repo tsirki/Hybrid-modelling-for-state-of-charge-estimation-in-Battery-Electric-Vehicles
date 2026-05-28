@@ -26,7 +26,7 @@ Generated CSV outputs, plotting-only scripts, and figure files are intentionally
 
 The scripts are organized roughly in the order used for the paper:
 
-1. Run raw-data preprocessing (`preprocess1.m`, then `preprocess3_2.m`) to build the MATLAB workspace variables used downstream.
+1. Run raw-data preprocessing (`preprocessing.m`) to merge the MATR batches and build the MATLAB workspace variables used downstream.
 2. Run the final sparse residual-model feature workflow.
 3. Run final EKF-GPR tests on primary and secondary battery groups.
 4. Analyze EKF residual profile structure.

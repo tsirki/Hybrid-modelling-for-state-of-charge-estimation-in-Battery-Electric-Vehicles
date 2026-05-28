@@ -8,8 +8,7 @@ The selected scripts were identified by matching the manuscript sections, genera
 
 | Repository path | Purpose |
 | --- | --- |
-| `code/matlab/preprocessing/preprocess1.m` | Combines the MIT battery batches into `batch_combined` and performs early single-cycle preprocessing experiments. |
-| `code/matlab/preprocessing/preprocess3_2.m` | Builds the per-battery/per-cycle workspace containers: `t_all`, `I_all`, `V_all`, `T_all`, `Q_all`, `R0_all`, and `valid_cols_all`. |
+| `code/matlab/preprocessing/preprocessing.m` | Combines the MIT battery batches into `batch_combined` and builds the per-battery/per-cycle workspace containers: `t_all`, `I_all`, `V_all`, `T_all`, `Q_all`, `R0_all`, and `valid_cols_all`. |
 | `code/matlab/feature_selection/stage1and2_for2GPRsv2.m` | Final feature-screening workflow for the two-GPR residual setup. |
 | `code/matlab/final_tests/primary_testing_final.m` | Primary-test final EKF/GPR/qnom-clamp evaluation. |
 | `code/matlab/final_tests/combined_qnomclamp_run.m` | Combined all/primary/secondary qnom-clamped run. |
