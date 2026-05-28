@@ -16,6 +16,11 @@ data/external/
 results/
 figures/
 workspaces/
+# Generated MATLAB output folders
+*_plots/
+*_figures/
+publication_plots_*/
+adaptive_bayes_per_battery/
 
 # Python
 __pycache__/
@@ -28,3 +33,4 @@ venv/
 Thumbs.db
 .vscode/
 .idea/
+
