@@ -25,7 +25,17 @@ Generated CSV outputs, plotting-only scripts, and figure files are intentionally
 
 ## Main Workflow
 
-The scripts are organized roughly in the order used for the paper:
+The recommended entry point is:
+
+```matlab
+run('code/matlab/run_reproduction_workflow.m')
+```
+
+Set `workflow_work_dir` to the local directory containing the required MAT
+files before running it. See `docs/reproducibility_checklist.md` for the exact
+file list and script order.
+
+The scripts are organized in the order used for the paper:
 
 1. Run raw-data preprocessing (`preprocessing.m`) to merge the MATR batches and build the MATLAB workspace variables used downstream.
 2. Run `create_fusion_model_config.m` and `extract_qnom_init_first_cycle.m` to recreate the compact config and battery-specific initial-capacity MAT files.
@@ -38,3 +48,7 @@ The scripts are organized roughly in the order used for the paper:
 ## Notes
 
 The original MATLAB Live Scripts (`.mlx`) were converted to plain MATLAB scripts (`.m`) for easier review, diffing, and reuse in GitHub.
+
+`preprocessing.m` is preserved unchanged because it is externally sourced. The
+workflow wrapper can call it, but the repository cleanup intentionally avoids
+editing that file.

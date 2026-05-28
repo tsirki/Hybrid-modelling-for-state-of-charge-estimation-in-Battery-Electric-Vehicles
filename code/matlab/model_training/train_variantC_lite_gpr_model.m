@@ -43,6 +43,23 @@ rng(42);
 %% =========================================================
 % CONDITIONAL LOADS
 %% =========================================================
+coreVars = {'t_all','I_all','V_all','Q_all'};
+need_core_load = false;
+for k = 1:numel(coreVars)
+    if exist(coreVars{k}, 'var') ~= 1
+        need_core_load = true;
+        break;
+    end
+end
+
+if need_core_load
+    if exist('battery_workspace_core.mat', 'file') == 2
+        load('battery_workspace_core.mat', 't_all','I_all','V_all','Q_all');
+    else
+        error('Missing core workspace variables and battery_workspace_core.mat was not found.');
+    end
+end
+
 needed_fusion_vars = {'I_noise_std','V_noise_std','R0','R1','C1','R2','C2'};
 need_fusion_load = false;
 for k = 1:numel(needed_fusion_vars)

@@ -17,15 +17,40 @@
 %   stage2_feature_top_pool_single.csv
 %% =========================================================
 
-clear; clc; close all;
-rng(42);
+% clear; clc; close all;
+% rng(42);
 
 %% =========================================================
 % LOAD
 %% =========================================================
-load('battery_workspace_core.mat');
-load('fusion_full_model.mat');
-load('Q_nom_init_first_cycle_all_batteries.mat');   % must contain: Q_nom_init_per_battery
+coreVars = {'t_all','I_all','V_all','Q_all'};
+need_core_load = false;
+for k = 1:numel(coreVars)
+    if exist(coreVars{k}, 'var') ~= 1
+        need_core_load = true;
+        break;
+    end
+end
+
+if need_core_load
+    if exist('battery_workspace_core.mat', 'file') == 2
+        load('battery_workspace_core.mat', 't_all','I_all','V_all','Q_all');
+    else
+        error('Missing core workspace variables and battery_workspace_core.mat was not found.');
+    end
+end
+
+if exist('fusion_full_model.mat', 'file') == 2
+    load('fusion_full_model.mat');
+else
+    error('Missing required file: fusion_full_model.mat.');
+end
+
+if exist('Q_nom_init_first_cycle_all_batteries.mat', 'file') == 2
+    load('Q_nom_init_first_cycle_all_batteries.mat', 'Q_nom_init_per_battery');
+else
+    error('Missing required file: Q_nom_init_first_cycle_all_batteries.mat.');
+end
 
 %% =========================================================
 % CHECKS

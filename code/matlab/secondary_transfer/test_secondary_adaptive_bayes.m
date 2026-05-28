@@ -44,7 +44,7 @@ custom_test_batteries = [101 105 124];
 % PLOT REQUESTS
 % each row = [battery_no cycle_idx]
 % ---------------------------------------------------------
-make_requested_plots = true;
+make_requested_plots = false;
 plot_mode = 'full';   % 'full' or 'residual_only'
 plot_requests = [
     101    2
@@ -52,7 +52,7 @@ plot_requests = [
     124 1200
 ];
 
-save_plot_files = true;
+save_plot_files = false;
 plot_dir = 'adaptive_bayes_plots';
 
 % ---------------------------------------------------------
@@ -63,7 +63,7 @@ save_mat = true;
 save_partial_mat = true;
 save_plot_package = true;
 
-save_per_battery_csv = true;
+save_per_battery_csv = false;
 save_per_battery_mat = false;
 per_battery_dir = 'adaptive_bayes_per_battery';
 

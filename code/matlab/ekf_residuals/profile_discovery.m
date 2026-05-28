@@ -39,6 +39,23 @@ rng(42);
 %% =========================================================
 % SETTINGS
 %% =========================================================
+coreVars = {'t_all','I_all','V_all','Q_all'};
+need_core_load = false;
+for k = 1:numel(coreVars)
+    if exist(coreVars{k}, 'var') ~= 1
+        need_core_load = true;
+        break;
+    end
+end
+
+if need_core_load
+    if exist('battery_workspace_core.mat', 'file') == 2
+        load('battery_workspace_core.mat', 't_all','I_all','V_all','Q_all');
+    else
+        error('Missing core workspace variables and battery_workspace_core.mat was not found.');
+    end
+end
+
 train_batteries = [2 4 6 8 9 10 12 14 16 18 19 21 23 25 27 29 31 33 35 37 39 41 42 44 46 48 50 52 54 56 58 60 62 64 66 68 70 72 74 76 78 80 82];
 
 I_noise_std = 0.05;

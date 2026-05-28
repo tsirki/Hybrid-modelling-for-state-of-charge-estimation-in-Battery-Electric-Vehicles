@@ -8,6 +8,7 @@ The selected scripts were identified by matching the manuscript sections, genera
 
 | Repository path | Purpose |
 | --- | --- |
+| `code/matlab/run_reproduction_workflow.m` | Ordered wrapper for running the curated supplementary workflow from a clean MATLAB session. |
 | `code/matlab/preprocessing/preprocessing.m` | Combines the MIT battery batches into `batch_combined` and builds the per-battery/per-cycle workspace containers: `t_all`, `I_all`, `V_all`, `T_all`, `Q_all`, `R0_all`, and `valid_cols_all`. |
 | `code/matlab/preprocessing/create_fusion_model_config.m` | Recreates the compact `fusion_full_model.mat` configuration from explicit EKF/noise/training constants. The original source script for this MAT file was not found; all discovered scripts treated it as an input. |
 | `code/matlab/preprocessing/extract_qnom_init_first_cycle.m` | Converted from `battery_nom_extract.mlx`; creates `Q_nom_init_first_cycle_all_batteries.mat` from the first cycle of each battery. |

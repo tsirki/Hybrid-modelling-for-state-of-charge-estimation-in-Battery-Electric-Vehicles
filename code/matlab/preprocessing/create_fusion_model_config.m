@@ -10,9 +10,6 @@
 %   fusion_full_model.mat
 %% =========================================================
 
-clearvars -except t_all I_all V_all Q_all T_all R0_all valid_cols_all;
-clc;
-
 % Original base training split used before the later Variant C-Lite expansion.
 train_batteries = [ ...
     2 4 6 8 9 10 12 14 16 18 19 21 23 25 27 29 31 33 35 37 39 41];
