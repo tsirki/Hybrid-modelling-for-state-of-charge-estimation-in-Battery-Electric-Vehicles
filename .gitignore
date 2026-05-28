@@ -1,0 +1,30 @@
+# MATLAB
+*.asv
+*.autosave
+*.m~
+slprj/
+*.slxc
+
+# Large local data/workspaces
+*.mat
+*.fig
+*.csv
+*.mlx
+*.mlx.bak
+data/raw/
+data/external/
+results/
+figures/
+workspaces/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
