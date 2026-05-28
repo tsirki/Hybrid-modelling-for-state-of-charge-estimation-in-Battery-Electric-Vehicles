@@ -8,8 +8,9 @@ The workflow combines an Extended Kalman Filter (EKF), sparse Gaussian Process R
 
 ## Repository Contents
 
-- `code/matlab/preprocessing/`: raw-data preprocessing scripts.
+- `code/matlab/preprocessing/`: raw-data preprocessing and compact workspace/config generation scripts.
 - `code/matlab/feature_selection/`: final sparse residual-model feature workflow.
+- `code/matlab/model_training/`: final Variant C-Lite GPR model training workflow.
 - `code/matlab/final_tests/`: primary final-test scripts for the qnom-clamped EKF-GPR runs.
 - `code/matlab/ekf_residuals/`: EKF residual profile discovery.
 - `code/matlab/primary_transfer/`: primary-test transferability and residual-shape analysis.
@@ -27,10 +28,12 @@ Generated CSV outputs, plotting-only scripts, and figure files are intentionally
 The scripts are organized roughly in the order used for the paper:
 
 1. Run raw-data preprocessing (`preprocessing.m`) to merge the MATR batches and build the MATLAB workspace variables used downstream.
-2. Run the final sparse residual-model feature workflow.
-3. Run final EKF-GPR tests on primary and secondary battery groups.
-4. Analyze EKF residual profile structure.
-5. Evaluate transferability, robustness, and adaptive Bayesian fusion.
+2. Run `create_fusion_model_config.m` and `extract_qnom_init_first_cycle.m` to recreate the compact config and battery-specific initial-capacity MAT files.
+3. Run the final sparse residual-model feature workflow.
+4. Train the final Variant C-Lite GPR model with `train_variantC_lite_gpr_model.m`.
+5. Run final EKF-GPR tests on primary and secondary battery groups.
+6. Analyze EKF residual profile structure.
+7. Evaluate transferability, robustness, and adaptive Bayesian fusion.
 
 ## Notes
 
