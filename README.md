@@ -54,6 +54,12 @@ These correspond to the MATR batch files dated 2017-05-12, 2017-06-30,
 and 2018-04-12, respectively.
 
 
+`battery_workspace_core.mat` is optional in the sense that it can be
+regenerated from the raw MATR batch files by running the preprocessing
+step. However, the authors recommend creating and keeping this file locally
+after the first preprocessing run, so that the full preprocessing script
+does not need to be executed every time the workflow is reproduced.
+
 ## Reproducing the Workflow
 
 Open MATLAB, set a local working directory that contains or should receive the `.mat` artifacts, and run:

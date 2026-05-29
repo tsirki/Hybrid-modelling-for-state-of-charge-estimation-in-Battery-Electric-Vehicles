@@ -10,6 +10,13 @@
 %   workflow_work_dir = 'C:\path\to\local\matlab_outputs';
 %   workflow_cfg = struct('runPreprocessing', true, 'runSecondaryTransfer', false);
 %   run('code/matlab/run_reproduction_workflow.m')
+%
+% Recommended use:
+%   1. First run: set runPreprocessing=true to create battery_workspace_core.mat
+%      from the raw MATR batch files.
+%   2. Later runs: keep runPreprocessing=false and reuse the local
+%      battery_workspace_core.mat cache. This avoids rerunning preprocessing
+%      every time.
 
 script_dir = fileparts(mfilename('fullpath'));
 addpath(genpath(script_dir));
@@ -26,7 +33,7 @@ end
 cd(workflow_work_dir);
 
 cfg = struct();
-cfg.runPreprocessing = false;
+cfg.runPreprocessing = false;  % set true to regenerate battery_workspace_core.mat
 cfg.createFusionConfig = true;
 cfg.extractQnomInit = true;
 cfg.runFeatureSelection = true;
