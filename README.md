@@ -88,5 +88,3 @@ https://github.com/rdbraatz/data-driven-prediction-of-battery-cycle-life-before-
 
 The workflow wrapper can call it, but the repository cleanup intentionally
 avoids editing that file.
-
-The original MATLAB Live Scripts (`.mlx`) were converted to plain `.m` scripts for review, diffing, and reuse.
