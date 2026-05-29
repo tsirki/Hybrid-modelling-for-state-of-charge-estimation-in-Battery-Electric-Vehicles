@@ -51,10 +51,8 @@ MATR_batch_20180412.mat
 ```
 
 These correspond to the MATR batch files dated 2017-05-12, 2017-06-30,
-and 2018-04-12, respectively. The raw files are intentionally ignored by
-Git and should remain local.
+and 2018-04-12, respectively.
 
-The raw and intermediate MATLAB workspace files can be large. In particular, `battery_workspace_core.mat` is expected locally and is not included in GitHub.
 
 ## Reproducing the Workflow
 
@@ -81,7 +79,7 @@ docs/reproducibility_checklist.md
 
 ## Included Results
 
-`results/csv/` contains compact CSV snapshots needed to inspect the numerical outputs without rerunning the full workflow. Bulky per-cycle, per-sample, figure, and plotting-package outputs are excluded from the release.
+`results/csv/` contains compact CSV snapshots needed to inspect the numerical outputs without rerunning the full workflow.
 
 ## Citation
 
@@ -101,6 +99,3 @@ docs/reproducibility_checklist.md
 `preprocessing.m` is preserved unchanged because it is externally sourced from
 
 https://github.com/rdbraatz/data-driven-prediction-of-battery-cycle-life-before-capacity-degradation/blob/master/LoadData.m
-
-The workflow wrapper can call it, but the repository cleanup intentionally
-avoids editing that file.
