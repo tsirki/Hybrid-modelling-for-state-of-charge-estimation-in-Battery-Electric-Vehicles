@@ -30,7 +30,7 @@ cfg.runPreprocessing = false;
 cfg.createFusionConfig = true;
 cfg.extractQnomInit = true;
 cfg.runFeatureSelection = true;
-cfg.trainVariantCLiteModel = true;
+cfg.trainHybridSocModel = true;
 cfg.runPrimaryFinalTest = true;
 cfg.runCombinedFinalTest = true;
 cfg.runProfileDiscovery = true;
@@ -77,9 +77,9 @@ if cfg.runFeatureSelection
         {'battery_workspace_core.mat', 'fusion_full_model.mat', 'Q_nom_init_first_cycle_all_batteries.mat'});
 end
 
-if cfg.trainVariantCLiteModel
-    run_workflow_step('Train Variant C-Lite GPR model', ...
-        fullfile(script_dir, 'model_training', 'train_variantC_lite_gpr_model.m'), ...
+if cfg.trainHybridSocModel
+    run_workflow_step('Train Hybrid EKF-GPR GPR model', ...
+        fullfile(script_dir, 'model_training', 'train_hybrid_soc_gpr_model.m'), ...
         {'battery_workspace_core.mat', 'fusion_full_model.mat', 'Q_nom_init_first_cycle_all_batteries.mat'});
 end
 
@@ -87,14 +87,14 @@ if cfg.runPrimaryFinalTest
     run_workflow_step('Primary final test', ...
         fullfile(script_dir, 'final_tests', 'primary_testing_final.m'), ...
         {'battery_workspace_core.mat', 'fusion_full_model.mat', ...
-         'Q_nom_init_first_cycle_all_batteries.mat', 'gpr_variantC_lite_model.mat'});
+         'Q_nom_init_first_cycle_all_batteries.mat', 'hybrid_soc_model.mat'});
 end
 
 if cfg.runCombinedFinalTest
     run_workflow_step('Combined primary/secondary final test', ...
         fullfile(script_dir, 'final_tests', 'combined_qnomclamp_run.m'), ...
         {'battery_workspace_core.mat', 'fusion_full_model.mat', ...
-         'Q_nom_init_first_cycle_all_batteries.mat', 'gpr_variantC_lite_model.mat'});
+         'Q_nom_init_first_cycle_all_batteries.mat', 'hybrid_soc_model.mat'});
 end
 
 if cfg.runProfileDiscovery
@@ -107,22 +107,22 @@ if cfg.runPrimaryTransfer
     run_workflow_step('Primary transfer and residual-shape overlap', ...
         fullfile(script_dir, 'primary_transfer', 'overlap.m'), ...
         {'battery_workspace_core.mat', 'fusion_full_model.mat', ...
-         'Q_nom_init_first_cycle_all_batteries.mat', 'gpr_variantC_lite_model.mat', ...
-         'residual_plot_bundle.mat'});
+         'Q_nom_init_first_cycle_all_batteries.mat', 'hybrid_soc_model.mat', ...
+         'residual_shape_model.mat'});
 end
 
 if cfg.runRobustness
     run_workflow_step('Robustness checks', ...
         fullfile(script_dir, 'robustness', 'check.m'), ...
         {'battery_workspace_core.mat', 'fusion_full_model.mat', ...
-         'Q_nom_init_first_cycle_all_batteries.mat', 'gpr_variantC_lite_model.mat'});
+         'Q_nom_init_first_cycle_all_batteries.mat', 'hybrid_soc_model.mat'});
 end
 
 if cfg.runSecondaryTransfer
     run_workflow_step('Secondary adaptive Bayesian fusion', ...
         fullfile(script_dir, 'secondary_transfer', 'test_secondary_adaptive_bayes.m'), ...
         {'battery_workspace_core.mat', 'fusion_full_model.mat', ...
-         'Q_nom_init_first_cycle_all_batteries.mat', 'gpr_variantC_lite_model.mat'});
+         'Q_nom_init_first_cycle_all_batteries.mat', 'hybrid_soc_model.mat'});
 end
 
 fprintf('Workflow completed successfully.\n');
@@ -130,6 +130,11 @@ fprintf('Workflow completed successfully.\n');
 function cfg = merge_workflow_config(cfg, override)
 names = fieldnames(override);
 for i = 1:numel(names)
+    if strcmp(names{i}, 'trainVariantCLiteModel')
+        cfg.trainHybridSocModel = override.(names{i});
+        continue;
+    end
+
     if isfield(cfg, names{i})
         cfg.(names{i}) = override.(names{i});
     else

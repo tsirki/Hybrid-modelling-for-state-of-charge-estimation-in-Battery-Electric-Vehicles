@@ -1,15 +1,15 @@
 %% =========================================================
-% VARIANT C-LITE PRIMARY TESTING ONLY + Q_NOM SANITY CLAMP
+% Hybrid EKF-GPR PRIMARY TESTING ONLY + Q_NOM SANITY CLAMP
 %
 % GOAL:
-%   Test the already-trained Variant C-Lite model with:
+%   Test the already-trained Hybrid EKF-GPR model with:
 %     - original Lite gate (same as previous better version)
 %     - Q_nom sanity clamp only
 %   on PRIMARY test batteries only
 %
 % IMPORTANT:
 %   - No retraining
-%   - Uses existing trained model: gpr_variantC_lite_model.mat
+%   - Uses existing trained model: hybrid_soc_model.mat
 %   - Serial version
 %
 % REQUIRED IN WORKSPACE OR FILES:
@@ -18,16 +18,15 @@
 %   R0, R1, C1, R2, C2
 %
 % REQUIRED FILES:
-%   gpr_variantC_lite_model.mat
+%   hybrid_soc_model.mat
 %   Q_nom_init_first_cycle_all_batteries.mat
 %
 % OPTIONAL FILE:
 %   fusion_full_model.mat
 %
 % OUTPUTS:
-%   final_test_variantC_lite_qnomclamp_cycle_results_primary.csv
-%   final_test_variantC_lite_qnomclamp_battery_summary_primary.csv
-%   final_test_variantC_lite_qnomclamp_primary_outputs.mat
+%   final_test_hybrid_soc_qnomclamp_battery_summary_primary.csv
+%   final_test_hybrid_soc_qnomclamp_primary_outputs.mat
 %% =========================================================
 
 clc; close all;
@@ -70,8 +69,11 @@ if exist('Q_nom_init_per_battery', 'var') ~= 1
     load('Q_nom_init_first_cycle_all_batteries.mat', 'Q_nom_init_per_battery');
 end
 
-if exist('gpr_final_vC_lite', 'var') ~= 1 || exist('predictors', 'var') ~= 1
-    load('gpr_variantC_lite_model.mat', 'gpr_final_vC_lite', 'predictors', 'model_info');
+if exist('gpr_final_hybrid', 'var') ~= 1 || exist('predictors', 'var') ~= 1
+    hybrid_model = load('hybrid_soc_model.mat', 'gpr_final_hybrid', 'predictors', 'model_info');
+    gpr_final_hybrid = hybrid_model.gpr_final_hybrid;
+    predictors = hybrid_model.predictors;
+    model_info = hybrid_model.model_info;
 end
 
 %% =========================================================
@@ -126,10 +128,7 @@ qnom_max_step_per_cycle = 0.03;  % max ratio step per cycle
 
 % -------- filenames --------
 save_csv = true;
-
-cycle_csv_name   = 'final_test_variantC_lite_qnomclamp_cycle_results_primary.csv';
-summary_csv_name = 'final_test_variantC_lite_qnomclamp_battery_summary_primary.csv';
-outputs_mat_name = 'final_test_variantC_lite_qnomclamp_primary_outputs.mat';
+summary_csv_name = 'final_test_hybrid_soc_qnomclamp_battery_summary_primary.csv';
 
 %% =========================================================
 % CHECKS
@@ -139,7 +138,7 @@ requiredVars = { ...
     'Q_nom_init_per_battery', ...
     'I_noise_std','V_noise_std', ...
     'R0','R1','C1','R2','C2', ...
-    'gpr_final_vC_lite','predictors'};
+    'gpr_final_hybrid','predictors'};
 
 for k = 1:numel(requiredVars)
     if exist(requiredVars{k}, 'var') ~= 1
@@ -150,7 +149,7 @@ end
 Q_nom_init_per_battery = Q_nom_init_per_battery(:);
 
 fprintf('\n=========================================================\n');
-fprintf('Testing previous Variant C-Lite + Q_nom sanity clamp\n');
+fprintf('Testing previous Hybrid EKF-GPR + Q_nom sanity clamp\n');
 
 fprintf('\nExpanded training exclusion set:\n');
  fprintf('%s\n', mat2str(train_batteries_eval));
@@ -317,7 +316,7 @@ for ib = 1:numel(test_batteries)
 
             residual_pred = nan(size(SOC_est));
             if any(valid_te)
-                residual_pred(valid_te) = predict(gpr_final_vC_lite, Xtest(valid_te,:));
+                residual_pred(valid_te) = predict(gpr_final_hybrid, Xtest(valid_te,:));
             end
             residual_pred = max(min(residual_pred, residual_clamp), -residual_clamp);
 
@@ -519,11 +518,6 @@ end
 % SAVE CSV
 %% =========================================================
 if save_csv
-    if ~isempty(CycleResults)
-        writetable(CycleResults, cycle_csv_name);
-    else
-        writetable(table(), cycle_csv_name);
-    end
 
     if ~isempty(BatterySummary)
         writetable(BatterySummary, summary_csv_name);
@@ -531,32 +525,14 @@ if save_csv
         writetable(table(), summary_csv_name);
     end
 
-    fprintf('\nSaved:\n');
-    fprintf('  %s\n', cycle_csv_name);
-    fprintf('  %s\n', summary_csv_name);
+    fprintf('\nSaved:\n');    fprintf('  %s\n', summary_csv_name);
 end
 
 %% =========================================================
-% SAVE MAT OUTPUTS
+% MAT OUTPUTS
 %% =========================================================
-save(outputs_mat_name, ...
-    'CycleResults', ...
-    'BatterySummary', ...
-    'predictors', ...
-    'test_batteries', ...
-    'primary_test_batteries', ...
-    'train_batteries_eval', ...
-    'exclude_batteries', ...
-    'alpha_state_base', ...
-    'slope_gate_ref', ...
-    'alpha_floor_mult', ...
-    'alpha_ema_mult', ...
-    'qnom_ratio_min', ...
-    'qnom_ratio_max', ...
-    'qnom_max_step_per_cycle');
-
-fprintf('\nSaved outputs MAT:\n');
-fprintf('  %s\n', outputs_mat_name);
+% Evaluation MAT files are intentionally not saved in the release workflow.
+% Compact numerical results are exported as CSV summaries.
 
 %% =========================================================
 % LOCAL FUNCTIONS

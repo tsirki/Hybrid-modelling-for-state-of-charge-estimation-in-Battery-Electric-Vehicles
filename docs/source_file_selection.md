@@ -13,7 +13,7 @@ The selected scripts were identified by matching the manuscript sections, genera
 | `code/matlab/preprocessing/create_fusion_model_config.m` | Recreates the compact `fusion_full_model.mat` configuration from explicit EKF/noise/training constants. The original source script for this MAT file was not found; all discovered scripts treated it as an input. |
 | `code/matlab/preprocessing/extract_qnom_init_first_cycle.m` | Converted from `battery_nom_extract.mlx`; creates `Q_nom_init_first_cycle_all_batteries.mat` from the first cycle of each battery. |
 | `code/matlab/feature_selection/stage1and2_for2GPRsv2.m` | Final feature-screening workflow for the two-GPR residual setup. |
-| `code/matlab/model_training/train_variantC_lite_gpr_model.m` | Converted from the final `untitled.mlx` creator script; trains and saves `gpr_variantC_lite_model.mat`. |
+| `code/matlab/model_training/train_hybrid_soc_gpr_model.m` | Converted from the final `untitled.mlx` creator script; trains and saves `hybrid_soc_model.mat`. |
 | `code/matlab/final_tests/combined_qnomclamp_run.m` | Combined all/primary/secondary qnom-clamped run. |
 | `code/matlab/final_tests/primary_testing_final.m` | Primary-test final EKF/GPR/qnom-clamp evaluation. |
 | `code/matlab/ekf_residuals/profile_discovery.m` | EKF residual profile discovery and clustering. |
@@ -27,7 +27,7 @@ Curated generated CSV outputs are tracked under `results/csv/`. The code can reg
 
 - `fusion_full_model.mat` compact EKF/GPR configuration.
 - `Q_nom_init_first_cycle_all_batteries.mat` battery-specific initial capacity values.
-- `gpr_variantC_lite_model.mat` final Variant C-Lite GPR residual model.
+- `hybrid_soc_model.mat` final Hybrid EKF-GPR GPR residual model.
 - EKF residual profile summaries.
 - Primary qnom-clamped test outputs.
 - Primary residual-shape overlap outputs.

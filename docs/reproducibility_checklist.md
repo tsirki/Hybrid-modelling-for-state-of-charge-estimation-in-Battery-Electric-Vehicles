@@ -14,8 +14,8 @@ workflow:
 | `battery_workspace_core.mat` | `preprocessing.m` plus the wrapper save step in `run_reproduction_workflow.m` | Must contain `t_all`, `I_all`, `V_all`, and `Q_all`. |
 | `fusion_full_model.mat` | `code/matlab/preprocessing/create_fusion_model_config.m` | Contains EKF parameters, noise settings, and training battery indices. |
 | `Q_nom_init_first_cycle_all_batteries.mat` | `code/matlab/preprocessing/extract_qnom_init_first_cycle.m` | Contains `Q_nom_init_per_battery`. |
-| `gpr_variantC_lite_model.mat` | `code/matlab/model_training/train_variantC_lite_gpr_model.m` | Final sparse Variant C-Lite residual GPR model. |
-| `residual_plot_bundle.mat` | `code/matlab/ekf_residuals/profile_discovery.m` | Required by `code/matlab/primary_transfer/overlap.m`. |
+| `hybrid_soc_model.mat` | `code/matlab/model_training/train_hybrid_soc_gpr_model.m` | Final sparse Hybrid EKF-GPR residual GPR model. |
+| `residual_shape_model.mat` | `code/matlab/ekf_residuals/profile_discovery.m` | Required by `code/matlab/primary_transfer/overlap.m`. |
 
 ## Recommended Order
 
@@ -45,8 +45,8 @@ workflow:
   unchanged in this release.
 - Downstream scripts now load `battery_workspace_core.mat` when the required
   workspace variables are missing.
-- Plot image export and per-battery CSV dumping are disabled by default for the
-  secondary adaptive Bayesian script to keep the release lightweight.
+- Plot image export, per-battery CSV dumping, and non-essential evaluation MAT
+  dumps are excluded from the release workflow to keep the repository focused.
 - Scripts write generated CSV/MAT outputs to the current MATLAB working
   directory. The checked-in CSV snapshots under `results/csv/` are the curated
   reference outputs from the release workflow.

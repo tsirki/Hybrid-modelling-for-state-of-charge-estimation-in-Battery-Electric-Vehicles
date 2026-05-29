@@ -1,9 +1,9 @@
 %% =========================================================
-% VARIANT C-LITE PRIMARY TESTING + Q_NOM CLAMP + SHAPE ASSESSMENT
+% Hybrid EKF-GPR PRIMARY TESTING + Q_NOM CLAMP + SHAPE ASSESSMENT
 % EKF vs RAW GPR ONLY
 %
 % GOAL
-%   Run PRIMARY testing of the already-trained Variant C-Lite model
+%   Run PRIMARY testing of the already-trained Hybrid EKF-GPR model
 %   and assign each PRIMARY test cycle to one of the previously
 %   discovered shape clusters, while:
 %     - IGNORING shape 1 as outlier in final shape-wise assessment
@@ -25,22 +25,20 @@
 % IMPORTANT
 %   - No retraining
 %   - No saving of t_all / I_all / V_all / Q_all
-%   - Uses residual_plot_bundle.mat only to recover the SHAPE space
+%   - Uses residual_shape_model.mat only to recover the SHAPE space
 %   - Lite model is NOT evaluated or saved
 %
 % REQUIRED FILES
 %   - battery_workspace_core.mat          (if core vars not already loaded)
 %   - fusion_full_model.mat               (if EKF params/noise not already loaded)
 %   - Q_nom_init_first_cycle_all_batteries.mat
-%   - gpr_variantC_lite_model.mat
-%   - residual_plot_bundle.mat
+%   - hybrid_soc_model.mat
+%   - residual_shape_model.mat
 %
 % OUTPUTS
-%   - final_test_variantC_qnomclamp_cycle_results_primary_withshape.csv
-%   - final_test_variantC_qnomclamp_battery_summary_primary_withshape.csv
-%   - final_test_variantC_qnomclamp_shape_summary_primary.csv
-%   - final_test_variantC_qnomclamp_selected_cycles_withshape.csv
-%   - final_test_variantC_qnomclamp_primary_withshape_outputs.mat
+%   - final_test_hybrid_soc_qnomclamp_battery_summary_primary_withshape.csv
+%   - final_test_hybrid_soc_qnomclamp_shape_summary_primary.csv
+%   - final_test_hybrid_soc_qnomclamp_primary_withshape_outputs.mat
 %% =========================================================
 
 clc; close all;
@@ -91,18 +89,21 @@ if exist('Q_nom_init_per_battery', 'var') ~= 1
     end
 end
 
-if exist('gpr_final_vC_lite', 'var') ~= 1 || exist('predictors', 'var') ~= 1
-    if exist('gpr_variantC_lite_model.mat','file') == 2
-        load('gpr_variantC_lite_model.mat', 'gpr_final_vC_lite', 'predictors', 'model_info');
+if exist('gpr_final_hybrid', 'var') ~= 1 || exist('predictors', 'var') ~= 1
+    if exist('hybrid_soc_model.mat','file') == 2
+        hybrid_model = load('hybrid_soc_model.mat', 'gpr_final_hybrid', 'predictors', 'model_info');
+    gpr_final_hybrid = hybrid_model.gpr_final_hybrid;
+    predictors = hybrid_model.predictors;
+    model_info = hybrid_model.model_info;
     else
-        error('gpr_variantC_lite_model.mat not found.');
+        error('hybrid_soc_model.mat not found.');
     end
 end
 
-if exist('residual_plot_bundle.mat','file') ~= 2
-    error('residual_plot_bundle.mat not found.');
+if exist('residual_shape_model.mat','file') ~= 2
+    error('residual_shape_model.mat not found.');
 end
-ShapeBundle = load('residual_plot_bundle.mat');
+ShapeBundle = load('residual_shape_model.mat');
 
 %% =========================================================
 % SETTINGS
@@ -159,13 +160,8 @@ phaseNames = {'FIRST','MIDDLE','LAST'};
 
 % -------- filenames --------
 save_csv = true;
-save_mat = true;
-
-cycle_csv_name    = 'final_test_variantC_qnomclamp_cycle_results_primary_withshape.csv';
-summary_csv_name  = 'final_test_variantC_qnomclamp_battery_summary_primary_withshape.csv';
-shape_csv_name    = 'final_test_variantC_qnomclamp_shape_summary_primary.csv';
-selected_csv_name = 'final_test_variantC_qnomclamp_selected_cycles_withshape.csv';
-outputs_mat_name  = 'final_test_variantC_qnomclamp_primary_withshape_outputs.mat';
+summary_csv_name  = 'final_test_hybrid_soc_qnomclamp_battery_summary_primary_withshape.csv';
+shape_csv_name    = 'final_test_hybrid_soc_qnomclamp_shape_summary_primary.csv';
 
 %% =========================================================
 % CHECKS
@@ -175,7 +171,7 @@ requiredVars = { ...
     'Q_nom_init_per_battery', ...
     'I_noise_std','V_noise_std', ...
     'R0','R1','C1','R2','C2', ...
-    'gpr_final_vC_lite','predictors'};
+    'gpr_final_hybrid','predictors'};
 
 for k = 1:numel(requiredVars)
     if exist(requiredVars{k}, 'var') ~= 1
@@ -186,12 +182,12 @@ end
 Q_nom_init_per_battery = Q_nom_init_per_battery(:);
 
 %% =========================================================
-% RECOVER SHAPE MODEL FROM residual_plot_bundle.mat
+% RECOVER SHAPE MODEL FROM residual_shape_model.mat
 %% =========================================================
 requiredShapeFields = {'ResidualShape','score_shape','bestCtr_shape','tau_grid'};
 for k = 1:numel(requiredShapeFields)
     if ~isfield(ShapeBundle, requiredShapeFields{k})
-        error('residual_plot_bundle.mat is missing %s', requiredShapeFields{k});
+        error('residual_shape_model.mat is missing %s', requiredShapeFields{k});
     end
 end
 
@@ -236,7 +232,7 @@ shape_model.explained = explained_shape_rec(1:nPC_shape);
 
 fprintf('\n=========================================================\n');
 fprintf('PRIMARY TESTING + SHAPE ASSESSMENT\n');
-fprintf('Recovered shape space from residual_plot_bundle.mat\n');
+fprintf('Recovered shape space from residual_shape_model.mat\n');
 fprintf('Shape clusters         : %d\n', size(shape_model.centroids,1));
 fprintf('Shape PCA dimensions   : %d\n', shape_model.nPC);
 fprintf('Primary test batteries : %d\n', numel(primary_test_batteries));
@@ -395,7 +391,7 @@ for ib = 1:numel(test_batteries)
 
             residual_pred = nan(size(SOC_est));
             if any(valid_te)
-                residual_pred(valid_te) = predict(gpr_final_vC_lite, Xtest(valid_te,:));
+                residual_pred(valid_te) = predict(gpr_final_hybrid, Xtest(valid_te,:));
             end
             residual_pred = max(min(residual_pred, residual_clamp), -residual_clamp);
 
@@ -729,11 +725,6 @@ end
 % SAVE CSV
 %% =========================================================
 if save_csv
-    if ~isempty(CycleResults)
-        writetable(CycleResults, cycle_csv_name);
-    else
-        writetable(table(), cycle_csv_name);
-    end
 
     if ~isempty(BatterySummary)
         writetable(BatterySummary, summary_csv_name);
@@ -747,45 +738,12 @@ if save_csv
         writetable(table(), shape_csv_name);
     end
 
-    if ~isempty(GPRSelTable)
-        writetable(GPRSelTable, selected_csv_name);
-    else
-        writetable(table(), selected_csv_name);
-    end
-
-    fprintf('\nSaved CSV files:\n');
-    fprintf('  %s\n', cycle_csv_name);
-    fprintf('  %s\n', summary_csv_name);
-    fprintf('  %s\n', shape_csv_name);
-    fprintf('  %s\n', selected_csv_name);
-end
+    fprintf('\nSaved CSV files:\n');    fprintf('  %s\n', summary_csv_name);
+    fprintf('  %s\n', shape_csv_name);end
 
 %% =========================================================
 % SAVE MAT OUTPUTS
 %% =========================================================
-if save_mat
-    save(outputs_mat_name, ...
-        'CycleResults', ...
-        'BatterySummary', ...
-        'ShapeSummary', ...
-        'GPRSelTable', ...
-        'GPRTrajTable', ...
-        'shape_model', ...
-        'test_batteries', ...
-        'primary_test_batteries', ...
-        'train_batteries_eval', ...
-        'exclude_batteries', ...
-        'qnom_ratio_min', ...
-        'qnom_ratio_max', ...
-        'qnom_max_step_per_cycle', ...
-        'residual_clamp', ...
-        'min_cycle_length', ...
-        'outlier_shape_id', ...
-        '-v7.3');
-
-    fprintf('\nSaved MAT output:\n');
-    fprintf('  %s\n', outputs_mat_name);
-end
 
 %% =========================================================
 % LOCAL FUNCTIONS

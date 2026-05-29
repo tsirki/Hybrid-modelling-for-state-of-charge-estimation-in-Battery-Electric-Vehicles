@@ -10,7 +10,7 @@
 %   fusion_full_model.mat
 %% =========================================================
 
-% Original base training split used before the later Variant C-Lite expansion.
+% Original base training split used before the later Hybrid EKF-GPR expansion.
 train_batteries = [ ...
     2 4 6 8 9 10 12 14 16 18 19 21 23 25 27 29 31 33 35 37 39 41];
 

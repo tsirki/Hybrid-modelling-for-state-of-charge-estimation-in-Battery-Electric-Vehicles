@@ -1,5 +1,5 @@
 %% =========================================================
-% VARIANT C-LITE + GROUPED 5-FOLD CV + PARFOR
+% Hybrid EKF-GPR + GROUPED 5-FOLD CV + PARFOR
 %
 % KEY IDEAS:
 %   1) Replace anti-causal tau with causal progress_causal
@@ -26,15 +26,12 @@
 %   fusion_full_model.mat
 %
 % OUTPUTS:
-%   gpr_variantC_lite_model.mat
-%   variantC_lite_grouped_battery_5fold_cv.csv
-%   final_test_variantC_lite_cycle_results_all.csv
-%   final_test_variantC_lite_battery_summary_all.csv
-%   final_test_variantC_lite_cycle_results_primary.csv
-%   final_test_variantC_lite_battery_summary_primary.csv
-%   final_test_variantC_lite_cycle_results_secondary.csv
-%   final_test_variantC_lite_battery_summary_secondary.csv
-%   final_test_variantC_lite_outputs.mat
+%   hybrid_soc_model.mat
+%   hybrid_soc_grouped_battery_5fold_cv.csv
+%   final_test_hybrid_soc_battery_summary_all.csv
+%   final_test_hybrid_soc_battery_summary_primary.csv
+%   final_test_hybrid_soc_battery_summary_secondary.csv
+%   final_test_hybrid_soc_outputs.mat
 %% =========================================================
 
 clc; close all;
@@ -146,7 +143,7 @@ bad_training_cycles = [ ...
     41   1
      4   1];
 
-% -------- Variant C-Lite predictors --------
+% -------- Hybrid EKF-GPR predictors --------
 predictors = { ...
     'soc_est', ...
     'progress_causal', ...
@@ -188,19 +185,12 @@ parallel_pool_profile = 'local';
 save_csv = true;
 save_cv_csv = true;
 
-cv_csv_name      = 'variantC_lite_grouped_battery_5fold_cv.csv';
+cv_csv_name      = 'hybrid_soc_grouped_battery_5fold_cv.csv';
+summary_csv_name = 'final_test_hybrid_soc_battery_summary_all.csv';
+primary_summary_csv_name = 'final_test_hybrid_soc_battery_summary_primary.csv';
+secondary_summary_csv_name = 'final_test_hybrid_soc_battery_summary_secondary.csv';
 
-cycle_csv_name   = 'final_test_variantC_lite_cycle_results_all.csv';
-summary_csv_name = 'final_test_variantC_lite_battery_summary_all.csv';
-
-primary_cycle_csv_name   = 'final_test_variantC_lite_cycle_results_primary.csv';
-primary_summary_csv_name = 'final_test_variantC_lite_battery_summary_primary.csv';
-
-secondary_cycle_csv_name   = 'final_test_variantC_lite_cycle_results_secondary.csv';
-secondary_summary_csv_name = 'final_test_variantC_lite_battery_summary_secondary.csv';
-
-model_mat_name   = 'gpr_variantC_lite_model.mat';
-outputs_mat_name = 'final_test_variantC_lite_outputs.mat';
+model_mat_name   = 'hybrid_soc_model.mat';
 
 %% =========================================================
 % CHECKS
@@ -264,7 +254,7 @@ end
 % BUILD TRAINING TABLE (PARALLEL OVER BATTERIES)
 %% =========================================================
 fprintf('=========================================================\n');
-fprintf('Building sparse training table for Variant C-Lite\n');
+fprintf('Building sparse training table for Hybrid EKF-GPR\n');
 fprintf('Training batteries: %s\n', mat2str(train_batteries));
 fprintf('Parallel build: %d\n', use_parallel_build);
 fprintf('=========================================================\n');
@@ -526,7 +516,7 @@ Ytrain = Ytrain(valid_tr);
 fprintf('\nTraining final sparse GPR with active set size = %d\n', gprActiveSetSize);
 
 rng(42);
-gpr_final_vC_lite = fitrgp(Xtrain, Ytrain, ...
+gpr_final_hybrid = fitrgp(Xtrain, Ytrain, ...
     'KernelFunction', gprKernel, ...
     'BasisFunction', gprBasis, ...
     'Standardize', true, ...
@@ -540,8 +530,9 @@ gpr_final_vC_lite = fitrgp(Xtrain, Ytrain, ...
 % SAVE TRAINED MODEL
 %% =========================================================
 model_info = struct();
-model_info.model_name = 'gpr_final_vC_lite';
-model_info.variant = 'Variant C-Lite';
+model_info.model_name = 'hybrid_soc_model';
+model_info.model_variable = 'gpr_final_hybrid';
+model_info.variant = 'Hybrid EKF-GPR';
 model_info.predictors = predictors;
 model_info.kernel = gprKernel;
 model_info.basis = gprBasis;
@@ -579,10 +570,9 @@ else
 end
 
 save(model_mat_name, ...
-    'gpr_final_vC_lite', ...
+    'gpr_final_hybrid', ...
     'predictors', ...
-    'model_info', ...
-    'CVFoldSummary');
+    'model_info');
 
 fprintf('\nSaved trained model:\n');
 fprintf('  %s\n', model_mat_name);
@@ -592,7 +582,7 @@ fprintf('  %s\n', model_mat_name);
 % (PARALLEL OVER BATTERIES)
 %% =========================================================
 fprintf('\n=========================================================\n');
-fprintf('Full testing Variant C-Lite on all test batteries\n');
+fprintf('Full testing Hybrid EKF-GPR on all test batteries\n');
 fprintf('Parallel test: %d\n', use_parallel_test);
 fprintf('Primary test batteries: %s\n', mat2str(primary_test_batteries));
 fprintf('Secondary test batteries: %s\n', mat2str(secondary_test_batteries));
@@ -605,14 +595,14 @@ if use_parallel_test
     parfor ib = 1:numel(test_batteries)
         battery_no = test_batteries(ib);
 
-        [CycleCell{ib}, SummaryCell{ib}] = evaluate_test_battery_variantC_lite( ...
+        [CycleCell{ib}, SummaryCell{ib}] = evaluate_test_battery_hybrid_soc( ...
             battery_no, ...
             t_all, I_all, V_all, Q_all, ...
             Q_nom_init_per_battery, ...
             I_noise_std, V_noise_std, ...
             R0, R1, C1, R2, C2, ...
             min_cycle_length, ...
-            gpr_final_vC_lite, ...
+            gpr_final_hybrid, ...
             residual_clamp, ...
             alpha_state_base, slope_gate_ref, alpha_floor_mult, alpha_ema_mult);
     end
@@ -620,14 +610,14 @@ else
     for ib = 1:numel(test_batteries)
         battery_no = test_batteries(ib);
 
-        [CycleCell{ib}, SummaryCell{ib}] = evaluate_test_battery_variantC_lite( ...
+        [CycleCell{ib}, SummaryCell{ib}] = evaluate_test_battery_hybrid_soc( ...
             battery_no, ...
             t_all, I_all, V_all, Q_all, ...
             Q_nom_init_per_battery, ...
             I_noise_std, V_noise_std, ...
             R0, R1, C1, R2, C2, ...
             min_cycle_length, ...
-            gpr_final_vC_lite, ...
+            gpr_final_hybrid, ...
             residual_clamp, ...
             alpha_state_base, slope_gate_ref, alpha_floor_mult, alpha_ema_mult);
     end
@@ -755,22 +745,11 @@ end
 % SAVE CSV
 %% =========================================================
 if save_csv
-    if ~isempty(CycleResults)
-        writetable(CycleResults, cycle_csv_name);
-    else
-        writetable(table(), cycle_csv_name);
-    end
 
     if ~isempty(BatterySummary)
         writetable(BatterySummary, summary_csv_name);
     else
         writetable(table(), summary_csv_name);
-    end
-
-    if ~isempty(PrimaryCycleResults)
-        writetable(PrimaryCycleResults, primary_cycle_csv_name);
-    else
-        writetable(table(), primary_cycle_csv_name);
     end
 
     if ~isempty(PrimaryBatterySummary)
@@ -779,49 +758,20 @@ if save_csv
         writetable(table(), primary_summary_csv_name);
     end
 
-    if ~isempty(SecondaryCycleResults)
-        writetable(SecondaryCycleResults, secondary_cycle_csv_name);
-    else
-        writetable(table(), secondary_cycle_csv_name);
-    end
-
     if ~isempty(SecondaryBatterySummary)
         writetable(SecondaryBatterySummary, secondary_summary_csv_name);
     else
         writetable(table(), secondary_summary_csv_name);
     end
 
-    fprintf('\nSaved:\n');
-    fprintf('  %s\n', cycle_csv_name);
-    fprintf('  %s\n', summary_csv_name);
-    fprintf('  %s\n', primary_cycle_csv_name);
-    fprintf('  %s\n', primary_summary_csv_name);
-    fprintf('  %s\n', secondary_cycle_csv_name);
-    fprintf('  %s\n', secondary_summary_csv_name);
+    fprintf('\nSaved:\n');    fprintf('  %s\n', summary_csv_name);    fprintf('  %s\n', primary_summary_csv_name);    fprintf('  %s\n', secondary_summary_csv_name);
 end
 
 %% =========================================================
-% SAVE MAT OUTPUTS
+% MAT OUTPUTS
 %% =========================================================
-save(outputs_mat_name, ...
-    'CycleResults', ...
-    'BatterySummary', ...
-    'PrimaryCycleResults', ...
-    'PrimaryBatterySummary', ...
-    'SecondaryCycleResults', ...
-    'SecondaryBatterySummary', ...
-    'TrainTable', ...
-    'CVFoldSummary', ...
-    'predictors', ...
-    'model_info', ...
-    'test_batteries', ...
-    'primary_test_batteries', ...
-    'secondary_test_batteries', ...
-    'train_batteries', ...
-    'exclude_batteries');
-
-fprintf('\nSaved outputs MAT:\n');
-fprintf('  %s\n', outputs_mat_name);
+% Evaluation tables are exported as CSV only. The only model MAT saved by
+% this workflow is hybrid_soc_model.mat above.
 
 %% =========================================================
 % LOCAL FUNCTIONS
@@ -1023,14 +973,14 @@ function TrainTableBatt = build_train_table_one_battery_lite( ...
     end
 end
 
-function [CycleResultsBatt, BatterySummaryBatt] = evaluate_test_battery_variantC_lite( ...
+function [CycleResultsBatt, BatterySummaryBatt] = evaluate_test_battery_hybrid_soc( ...
     battery_no, ...
     t_all, I_all, V_all, Q_all, ...
     Q_nom_init_per_battery, ...
     I_noise_std, V_noise_std, ...
     R0, R1, C1, R2, C2, ...
     min_cycle_length, ...
-    gpr_final_vC_lite, ...
+    gpr_final_hybrid, ...
     residual_clamp, ...
     alpha_state_base, slope_gate_ref, alpha_floor_mult, alpha_ema_mult)
 
@@ -1182,7 +1132,7 @@ function [CycleResultsBatt, BatterySummaryBatt] = evaluate_test_battery_variantC
 
             residual_pred = nan(size(SOC_est));
             if any(valid_te)
-                residual_pred(valid_te) = predict(gpr_final_vC_lite, Xtest(valid_te,:));
+                residual_pred(valid_te) = predict(gpr_final_hybrid, Xtest(valid_te,:));
             end
 
             residual_pred = max(min(residual_pred, residual_clamp), -residual_clamp);

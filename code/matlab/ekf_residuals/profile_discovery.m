@@ -650,8 +650,6 @@ disp(PublicationSummary);
 % SAVE CSV
 %% =========================================================
 if save_csv
-    writetable(CycleTable, 'residual_profile_cycle_table.csv');
-
     ClusterSummaryRaw.model_type = repmat("raw", height(ClusterSummaryRaw), 1);
     ClusterSummaryShape.model_type = repmat("shape", height(ClusterSummaryShape), 1);
 
@@ -676,9 +674,7 @@ if save_csv
     ShapeClusterLabelCrossTab = movevars(ShapeClusterLabelCrossTab, 'cycle_label', 'Before', 1);
     writetable(ShapeClusterLabelCrossTab, 'residual_profile_shape_cluster_label_crosstab.csv');
 
-    fprintf('\nSaved:\n');
-    fprintf('  residual_profile_cycle_table.csv\n');
-    fprintf('  residual_profile_cluster_summary.csv\n');
+    fprintf('\nSaved:\n');    fprintf('  residual_profile_cluster_summary.csv\n');
     fprintf('  residual_profile_k_selection.csv\n');
     fprintf('  residual_profile_publication_summary.csv\n');
     fprintf('  residual_profile_cyclelabel_summary.csv\n');
@@ -689,8 +685,7 @@ end
 %% =========================================================
 % SAVE SHAPE MODEL BUNDLE FOR PRIMARY TRANSFER ANALYSIS
 %% =========================================================
-save('residual_plot_bundle.mat', ...
-    'ResidualRaw', ...
+save('residual_shape_model.mat', ...
     'ResidualShape', ...
     'score_shape', ...
     'bestCtr_shape', ...
@@ -701,7 +696,7 @@ save('residual_plot_bundle.mat', ...
     'ClusterSummaryShape', ...
     'ClusterSummaryRaw');
 
-fprintf('  residual_plot_bundle.mat\n');
+fprintf('  residual_shape_model.mat\\n');
 
 %% =========================================================
 % LOCAL FUNCTIONS

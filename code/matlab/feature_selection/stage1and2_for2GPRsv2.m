@@ -12,7 +12,6 @@
 %   Q_nom_init_first_cycle_all_batteries.mat      -> must contain variable: Q_nom_init_per_battery
 %
 % OUTPUTS:
-%   stage2_sparse_samples_single.csv
 %   stage2_feature_scores_single.csv
 %   stage2_feature_top_pool_single.csv
 %% =========================================================
@@ -147,7 +146,6 @@ end
 %% =========================================================
 % OUTPUT NAMES
 %% =========================================================
-samples_csv = 'stage2_sparse_samples_single.csv';
 scores_csv  = 'stage2_feature_scores_single.csv';
 top_csv     = 'stage2_feature_top_pool_single.csv';
 
@@ -372,8 +370,6 @@ if isempty(AllRows)
     error('No samples collected.');
 end
 
-writetable(AllRows, samples_csv);
-
 %% =========================================================
 % SIMPLE FEATURE SCORING
 %% =========================================================
@@ -414,9 +410,8 @@ disp(' ');
 disp('==================== STAGE 2 FEATURE SCORES ====================');
 disp(ScoreTable);
 
-fprintf('\nFinal sample count saved: %d\n', height(AllRows));
+fprintf('\\nFinal sample count used for scoring: %d\\n', height(AllRows));
 fprintf('Saved:\n');
-fprintf('  %s\n', samples_csv);
 fprintf('  %s\n', scores_csv);
 fprintf('  %s\n', top_csv);
 

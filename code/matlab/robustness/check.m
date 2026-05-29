@@ -1,5 +1,5 @@
 %% =========================================================
-% VARIANT C-LITE ROBUSTNESS TESTING
+% Hybrid EKF-GPR ROBUSTNESS TESTING
 % EKF vs RAW GPR ONLY
 %
 % SCENARIOS
@@ -9,7 +9,7 @@
 %   4) current_bias     : constant current sensor bias
 %
 % GOAL
-%   Evaluate robustness of the already-trained Variant C-Lite raw GPR
+%   Evaluate robustness of the already-trained Hybrid EKF-GPR raw GPR
 %   correction against the EKF under stressed conditions, while:
 %     - using PRIMARY test batteries only
 %     - keeping the same q_nom clamp logic
@@ -25,13 +25,11 @@
 %   - battery_workspace_core.mat
 %   - fusion_full_model.mat
 %   - Q_nom_init_first_cycle_all_batteries.mat
-%   - gpr_variantC_lite_model.mat
+%   - hybrid_soc_model.mat
 %
 % OUTPUTS
-%   - robustness_cycle_results_all.csv
 %   - robustness_battery_summary_all.csv
 %   - robustness_scenario_summary.csv
-%   - robustness_selected_cycles.csv
 %   - robustness_outputs.mat
 %% =========================================================
 
@@ -83,11 +81,14 @@ if exist('Q_nom_init_per_battery', 'var') ~= 1
     end
 end
 
-if exist('gpr_final_vC_lite', 'var') ~= 1 || exist('predictors', 'var') ~= 1
-    if exist('gpr_variantC_lite_model.mat','file') == 2
-        load('gpr_variantC_lite_model.mat', 'gpr_final_vC_lite', 'predictors', 'model_info');
+if exist('gpr_final_hybrid', 'var') ~= 1 || exist('predictors', 'var') ~= 1
+    if exist('hybrid_soc_model.mat','file') == 2
+        hybrid_model = load('hybrid_soc_model.mat', 'gpr_final_hybrid', 'predictors', 'model_info');
+    gpr_final_hybrid = hybrid_model.gpr_final_hybrid;
+    predictors = hybrid_model.predictors;
+    model_info = hybrid_model.model_info;
     else
-        error('gpr_variantC_lite_model.mat not found.');
+        error('hybrid_soc_model.mat not found.');
     end
 end
 
@@ -113,13 +114,8 @@ phaseNames = {'FIRST','MIDDLE','LAST'};
 
 % filenames
 save_csv = true;
-save_mat = true;
-
-cycle_csv_name    = 'robustness_cycle_results_all.csv';
 battery_csv_name  = 'robustness_battery_summary_all.csv';
 scenario_csv_name = 'robustness_scenario_summary.csv';
-selected_csv_name = 'robustness_selected_cycles.csv';
-outputs_mat_name  = 'robustness_outputs.mat';
 
 %% =========================================================
 % PRIMARY TEST SPLIT
@@ -191,7 +187,7 @@ requiredVars = { ...
     'Q_nom_init_per_battery', ...
     'I_noise_std','V_noise_std', ...
     'R0','R1','C1','R2','C2', ...
-    'gpr_final_vC_lite','predictors'};
+    'gpr_final_hybrid','predictors'};
 
 for k = 1:numel(requiredVars)
     if exist(requiredVars{k}, 'var') ~= 1
@@ -372,7 +368,7 @@ for iscn = 1:numel(ScenarioList)
 
                 residual_pred = nan(size(SOC_est));
                 if any(valid_te)
-                    residual_pred(valid_te) = predict(gpr_final_vC_lite, Xtest(valid_te,:));
+                    residual_pred(valid_te) = predict(gpr_final_hybrid, Xtest(valid_te,:));
                 end
                 residual_pred = max(min(residual_pred, residual_clamp), -residual_clamp);
 
@@ -656,11 +652,6 @@ end
 % SAVE CSV
 %% =========================================================
 if save_csv
-    if ~isempty(CycleResultsAll)
-        writetable(CycleResultsAll, cycle_csv_name);
-    else
-        writetable(table(), cycle_csv_name);
-    end
 
     if ~isempty(BatterySummaryAll)
         writetable(BatterySummaryAll, battery_csv_name);
@@ -674,45 +665,12 @@ if save_csv
         writetable(table(), scenario_csv_name);
     end
 
-    if ~isempty(RobustSelTable)
-        writetable(RobustSelTable, selected_csv_name);
-    else
-        writetable(table(), selected_csv_name);
-    end
-
-    fprintf('\nSaved CSV files:\n');
-    fprintf('  %s\n', cycle_csv_name);
-    fprintf('  %s\n', battery_csv_name);
-    fprintf('  %s\n', scenario_csv_name);
-    fprintf('  %s\n', selected_csv_name);
-end
+    fprintf('\nSaved CSV files:\n');    fprintf('  %s\n', battery_csv_name);
+    fprintf('  %s\n', scenario_csv_name);end
 
 %% =========================================================
 % SAVE MAT
 %% =========================================================
-if save_mat
-    save(outputs_mat_name, ...
-        'CycleResultsAll', ...
-        'BatterySummaryAll', ...
-        'ScenarioSummary', ...
-        'RobustSelTable', ...
-        'RobustTrajTable', ...
-        'ScenarioList', ...
-        'test_batteries', ...
-        'primary_test_batteries', ...
-        'train_batteries_eval', ...
-        'exclude_batteries', ...
-        'predictors', ...
-        'qnom_ratio_min', ...
-        'qnom_ratio_max', ...
-        'qnom_max_step_per_cycle', ...
-        'residual_clamp', ...
-        'min_cycle_length', ...
-        '-v7.3');
-
-    fprintf('\nSaved MAT output:\n');
-    fprintf('  %s\n', outputs_mat_name);
-end
 
 %% =========================================================
 % LOCAL FUNCTIONS

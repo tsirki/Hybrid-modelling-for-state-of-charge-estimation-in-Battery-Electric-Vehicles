@@ -1,5 +1,5 @@
 %% =========================================================
-% ADAPTIVE BAYESIAN FUSION + PLOT PACKAGE EXPORT
+% ADAPTIVE BAYESIAN FUSION
 %
 % GOAL:
 %   Evaluate adaptive Bayesian fusion and save all the required
@@ -11,14 +11,8 @@
 %     - landmark plots
 %
 % MAIN OUTPUTS:
-%   adaptive_bayes_cycle_results.csv
 %   adaptive_bayes_battery_summary.csv
 %   adaptive_bayes_outputs.mat
-%
-% PLOT PACKAGE OUTPUTS:
-%   adaptive_bayes_plot_package.mat
-%   BayesSelTable
-%   BayesTrajTable
 %
 % IMPORTANT:
 %   - no retraining
@@ -45,19 +39,7 @@ custom_test_batteries = [101 105 124];
 % SAVE OPTIONS
 % ---------------------------------------------------------
 save_csv = true;
-save_mat = true;
-save_partial_mat = true;
-save_plot_package = true;
-
-save_per_battery_csv = false;
-save_per_battery_mat = false;
-per_battery_dir = 'adaptive_bayes_per_battery';
-
-cycle_csv_name         = 'adaptive_bayes_cycle_results.csv';
 summary_csv_name       = 'adaptive_bayes_battery_summary.csv';
-outputs_mat_name       = 'adaptive_bayes_outputs.mat';
-partial_outputs_mat    = 'adaptive_bayes_outputs_partial.mat';
-plot_package_mat_name  = 'adaptive_bayes_plot_package.mat';
 
 % ---------------------------------------------------------
 % RUNTIME / LOGGING
@@ -176,10 +158,6 @@ P.alpha_floor_startup   = 0.38;
 % FOLDER SETUP
 %% =========================================================
 
-if (save_per_battery_csv || save_per_battery_mat) && ~exist(per_battery_dir, 'dir')
-    mkdir(per_battery_dir);
-end
-
 %% =========================================================
 % CONDITIONAL LOADS
 %% =========================================================
@@ -200,8 +178,11 @@ if exist('Q_nom_init_per_battery', 'var') ~= 1
     load('Q_nom_init_first_cycle_all_batteries.mat', 'Q_nom_init_per_battery');
 end
 
-if exist('gpr_final_vC_lite', 'var') ~= 1 || exist('predictors', 'var') ~= 1
-    load('gpr_variantC_lite_model.mat', 'gpr_final_vC_lite', 'predictors', 'model_info');
+if exist('gpr_final_hybrid', 'var') ~= 1 || exist('predictors', 'var') ~= 1
+    hybrid_model = load('hybrid_soc_model.mat', 'gpr_final_hybrid', 'predictors', 'model_info');
+    gpr_final_hybrid = hybrid_model.gpr_final_hybrid;
+    predictors = hybrid_model.predictors;
+    model_info = hybrid_model.model_info;
 end
 
 coreVars = {'t_all','I_all','V_all','Q_all'};
@@ -229,7 +210,7 @@ requiredVars = { ...
     'Q_nom_init_per_battery', ...
     'I_noise_std','V_noise_std', ...
     'R0','R1','C1','R2','C2', ...
-    'gpr_final_vC_lite','predictors'};
+    'gpr_final_hybrid','predictors'};
 
 for k = 1:numel(requiredVars)
     if exist(requiredVars{k}, 'var') ~= 1
@@ -452,7 +433,7 @@ for ib = 1:numel(test_batteries)
             residual_std_raw  = nan(size(SOC_est));
 
             if any(valid_te)
-                [yp, ys] = predict_gpr_with_std(gpr_final_vC_lite, Xtest(valid_te,:));
+                [yp, ys] = predict_gpr_with_std(gpr_final_hybrid, Xtest(valid_te,:));
                 residual_pred_raw(valid_te) = yp;
                 residual_std_raw(valid_te)  = ys;
             end
@@ -740,32 +721,10 @@ for ib = 1:numel(test_batteries)
 
         BatterySummary = [BatterySummary; BatterySummaryRow]; %#ok<AGROW>
     end
-
-    if save_per_battery_csv && ~isempty(BatteryCycleTable)
-        writetable(BatteryCycleTable, fullfile(per_battery_dir, sprintf('battery_%03d_cycle_results.csv', battery_no)));
-        if ~isempty(BatterySummaryRow)
-            writetable(BatterySummaryRow, fullfile(per_battery_dir, sprintf('battery_%03d_summary.csv', battery_no)));
-        end
-    end
-
-    if save_per_battery_mat
-        save(fullfile(per_battery_dir, sprintf('battery_%03d_outputs.mat', battery_no)), ...
-            'battery_no', 'BatteryCycleTable', 'BatterySummaryRow', 'P');
-    end
-
-    if save_partial_mat
-        save(partial_outputs_mat, ...
-            'CycleResults', 'BatterySummary', ...
-            'test_batteries', ...
-            'primary_test_batteries', 'secondary_test_batteries', ...
-            'train_batteries_eval', 'exclude_batteries', ...
-            'P', ...
-        'qnom_ratio_min', 'qnom_ratio_max', 'qnom_max_step_per_cycle');
-    end
 end
 
 %% =========================================================
-% SORT + PLOT PACKAGE TABLES
+% SORT SELECTED-CYCLE TABLES
 %% =========================================================
 if ~isempty(CycleResults) && istable(CycleResults) && ...
    ismember('battery_no', CycleResults.Properties.VariableNames) && ...
@@ -843,11 +802,6 @@ end
 % SAVE
 %% =========================================================
 if save_csv
-    if ~isempty(CycleResults)
-        writetable(CycleResults, cycle_csv_name);
-    else
-        writetable(table(), cycle_csv_name);
-    end
 
     if ~isempty(BatterySummary)
         writetable(BatterySummary, summary_csv_name);
@@ -855,39 +809,10 @@ if save_csv
         writetable(table(), summary_csv_name);
     end
 
-    fprintf('\nSaved CSVs:\n');
-    fprintf('  %s\n', cycle_csv_name);
-    fprintf('  %s\n', summary_csv_name);
+    fprintf('\nSaved CSVs:\n');    fprintf('  %s\n', summary_csv_name);
 end
 
-if save_mat
-    save(outputs_mat_name, ...
-        'CycleResults', 'BatterySummary', ...
-        'test_batteries', ...
-        'primary_test_batteries', 'secondary_test_batteries', ...
-        'train_batteries_eval', 'exclude_batteries', ...
-        'P', ...
-        'qnom_ratio_min', 'qnom_ratio_max', 'qnom_max_step_per_cycle');
 
-    fprintf('Saved MAT:\n');
-    fprintf('  %s\n', outputs_mat_name);
-end
-
-if save_plot_package
-    save(plot_package_mat_name, ...
-        'CycleResults', 'BatterySummary', ...
-        'BayesSelTable', 'BayesTrajTable', ...
-        'test_batteries', ...
-        'primary_test_batteries', 'secondary_test_batteries', ...
-        'train_batteries_eval', 'exclude_batteries', ...
-        'P', ...
-        'qnom_ratio_min', 'qnom_ratio_max', 'qnom_max_step_per_cycle', ...
-        'residual_clamp', 'min_cycle_length', ...
-        '-v7.3');
-
-    fprintf('Saved plot package MAT:\n');
-    fprintf('  %s\n', plot_package_mat_name);
-end
 
 %% =========================================================
 % LOCAL FUNCTIONS
