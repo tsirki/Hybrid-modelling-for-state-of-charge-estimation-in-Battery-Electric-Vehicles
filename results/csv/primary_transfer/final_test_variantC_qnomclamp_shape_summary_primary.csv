@@ -1,0 +1,2 @@
+shape_cluster,n_cycles,n_batteries,mean_rmse_ekf,mean_rmse_gpr,mean_delta_gpr_vs_ekf,mean_rmse_ekf_late,mean_rmse_gpr_late,gpr_improve_rate_vs_ekf,gpr_failure_rate_vs_ekf,mean_qnom_start_frac,mean_shape_distance
+2,110,40,0.0362810277920731,0.0426323565865355,0.00635132879446244,NaN,NaN,0.145454545454545,0.854545454545454,0.972727272727273,7.54153428405233

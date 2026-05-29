@@ -123,10 +123,6 @@ qnom_ratio_min = 0.60;           % lower bound for Q_nom / Q_nom_init
 qnom_ratio_max = 1.05;           % upper bound
 qnom_max_step_per_cycle = 0.03;  % max ratio step per cycle
 
-% -------- plotting --------
-make_plots = false;
-plot_selected_cycles_only = true;
-plot_only_batteries = [1 3 5 7 11];
 
 % -------- filenames --------
 save_csv = true;
@@ -425,64 +421,6 @@ for ib = 1:numel(test_batteries)
                 'is_lite_worse_vs_ekf', ...
                 'is_lite_worse_than_gpr', ...
                 'is_selected_cycle'});
-
-            if make_plots
-                do_plot = true;
-
-                if plot_selected_cycles_only && ~ismember(cycle_idx, selected_cycles)
-                    do_plot = false;
-                end
-
-                if ~isempty(plot_only_batteries) && ~ismember(battery_no, plot_only_batteries)
-                    do_plot = false;
-                end
-
-                if do_plot
-                    figure('Name', sprintf('Battery %d Cycle %d', battery_no, cycle_idx), 'Color', 'w');
-                    tiledlayout(2,2,'Padding','compact','TileSpacing','compact');
-
-                    nexttile;
-                    plot(t, SOC_true, 'k-', 'LineWidth', 1.8, 'DisplayName', 'True SOC'); hold on;
-                    plot(t, SOC_est, 'b--', 'LineWidth', 1.2, 'DisplayName', 'EKF');
-                    plot(t, SOC_gpr, 'm-', 'LineWidth', 1.2, 'DisplayName', 'EKF + GPR');
-                    plot(t, SOC_lite, 'r-', 'LineWidth', 1.4, 'DisplayName', 'EKF + Lite');
-                    xlabel('Time');
-                    ylabel('SOC');
-                    title(sprintf('SOC | Batt %d Cycle %d', battery_no, cycle_idx));
-                    legend('Location','best');
-                    grid on;
-
-                    nexttile;
-                    plot(t, SOC_true - SOC_est, 'k-', 'LineWidth', 1.4, 'DisplayName', 'True residual'); hold on;
-                    plot(t, residual_pred, 'r--', 'LineWidth', 1.3, 'DisplayName', 'Pred residual');
-                    plot(t, alpha_lite, 'b-', 'LineWidth', 1.2, 'DisplayName', 'alpha lite');
-                    yline(0,'k:');
-                    xlabel('Time');
-                    ylabel('Residual / Weight');
-                    title('Residual prediction + Lite gate');
-                    legend('Location','best');
-                    grid on;
-
-                    nexttile;
-                    plot(t, progress_causal, 'k-', 'LineWidth', 1.2, 'DisplayName', 'progress causal'); hold on;
-                    plot(t, norm_innov_mean_so_far, 'b-', 'LineWidth', 1.2, 'DisplayName', 'norm innov mean');
-                    plot(t, v_resid_abs_mean_so_far, 'r-', 'LineWidth', 1.2, 'DisplayName', 'v resid mean');
-                    xlabel('Time');
-                    ylabel('Feature value');
-                    title('Key cumulative features');
-                    legend('Location','best');
-                    grid on;
-
-                    nexttile;
-                    plot(t, V_raw, 'k--', 'LineWidth', 1.0, 'DisplayName', 'Measured V'); hold on;
-                    plot(t, V_model, 'b-', 'LineWidth', 1.3, 'DisplayName', 'Modelled V');
-                    xlabel('Time');
-                    ylabel('Voltage [V]');
-                    title(sprintf('Voltage RMSE = %.4f', rmse_V));
-                    legend('Location','best');
-                    grid on;
-                end
-            end
 
             Q_nom = Q_nom_next;
 

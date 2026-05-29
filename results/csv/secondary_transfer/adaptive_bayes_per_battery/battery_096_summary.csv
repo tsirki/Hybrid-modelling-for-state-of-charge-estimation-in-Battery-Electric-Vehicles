@@ -1,0 +1,2 @@
+test_group,battery_no,num_cycles_evaluated,mean_rmse_ekf,mean_rmse_gpr,mean_rmse_bayes,mean_rmse_ekf_late,mean_rmse_gpr_late,mean_rmse_bayes_late,num_bayes_improved_vs_ekf,num_bayes_better_than_gpr,num_bayes_worse_vs_ekf,num_bayes_worse_than_gpr,bayes_improve_rate_vs_ekf,bayes_better_rate_vs_gpr,mean_alpha_bayes,mean_sigma_ekf,mean_sigma_gpr,num_qnom_clamped_cycles
+secondary,96,3,0.0271331699915849,0.0320423442720052,0.0274125309982176,NaN,NaN,NaN,1,3,2,0,0.333333333333333,1,0.793684102127376,0.01334108906566,0.00617732540755439,3

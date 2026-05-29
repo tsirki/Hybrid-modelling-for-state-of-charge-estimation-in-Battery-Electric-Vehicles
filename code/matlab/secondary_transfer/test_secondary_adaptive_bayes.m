@@ -40,20 +40,6 @@ rng(42);
 use_secondary_default = true;     
 custom_test_batteries = [101 105 124];
 
-% ---------------------------------------------------------
-% PLOT REQUESTS
-% each row = [battery_no cycle_idx]
-% ---------------------------------------------------------
-make_requested_plots = false;
-plot_mode = 'full';   % 'full' or 'residual_only'
-plot_requests = [
-    101    2
-    101  600
-    124 1200
-];
-
-save_plot_files = false;
-plot_dir = 'adaptive_bayes_plots';
 
 % ---------------------------------------------------------
 % SAVE OPTIONS
@@ -189,9 +175,6 @@ P.alpha_floor_startup   = 0.38;
 %% =========================================================
 % FOLDER SETUP
 %% =========================================================
-if save_plot_files && ~exist(plot_dir, 'dir')
-    mkdir(plot_dir);
-end
 
 if (save_per_battery_csv || save_per_battery_mat) && ~exist(per_battery_dir, 'dir')
     mkdir(per_battery_dir);
@@ -296,8 +279,6 @@ fprintf('\n=========================================================\n');
 fprintf('ADAPTIVE BAYESIAN FUSION WITH PREVIOUS-CYCLE MEMORY\n');
 fprintf('Testing batteries:\n%s\n', mat2str(test_batteries));
 fprintf('Count = %d\n', numel(test_batteries));
-fprintf('Plot requests:\n');
-disp(plot_requests);
 fprintf('=========================================================\n');
 
 %% =========================================================
@@ -694,17 +675,12 @@ for ib = 1:numel(test_batteries)
                     'abs_err_ekf','abs_err_gpr','abs_err_bayes'})};
             end
 
-            if make_requested_plots && matches_plot_request(battery_no, cycle_idx, plot_requests)
-                make_cycle_diagnostic_plot(D, M_ekf, M_gpr, M_bayes, mem, mem_out, ...
-                    plot_mode, save_plot_files, plot_dir);
-            end
 
             mem = mem_out;
             Q_nom = Q_nom_next;
 
             if cycle_idx == 1 || cycle_idx == num_cycles || ...
-               mod(cycle_idx, print_every_n_cycles) == 0 || ...
-               matches_plot_request(battery_no, cycle_idx, plot_requests)
+               mod(cycle_idx, print_every_n_cycles) == 0
 
                 fprintf(['  Cycle %4d | EKF = %.6f | GPR = %.6f | ' ...
                          'Bayes = %.6f | Bayes-EKF = %.6f | alpha = %.4f\n'], ...
@@ -783,8 +759,8 @@ for ib = 1:numel(test_batteries)
             'test_batteries', ...
             'primary_test_batteries', 'secondary_test_batteries', ...
             'train_batteries_eval', 'exclude_batteries', ...
-            'plot_requests', 'P', ...
-            'qnom_ratio_min', 'qnom_ratio_max', 'qnom_max_step_per_cycle');
+            'P', ...
+        'qnom_ratio_min', 'qnom_ratio_max', 'qnom_max_step_per_cycle');
     end
 end
 
@@ -890,7 +866,7 @@ if save_mat
         'test_batteries', ...
         'primary_test_batteries', 'secondary_test_batteries', ...
         'train_batteries_eval', 'exclude_batteries', ...
-        'plot_requests', 'P', ...
+        'P', ...
         'qnom_ratio_min', 'qnom_ratio_max', 'qnom_max_step_per_cycle');
 
     fprintf('Saved MAT:\n');
@@ -904,7 +880,7 @@ if save_plot_package
         'test_batteries', ...
         'primary_test_batteries', 'secondary_test_batteries', ...
         'train_batteries_eval', 'exclude_batteries', ...
-        'plot_requests', 'P', ...
+        'P', ...
         'qnom_ratio_min', 'qnom_ratio_max', 'qnom_max_step_per_cycle', ...
         'residual_clamp', 'min_cycle_length', ...
         '-v7.3');
@@ -933,13 +909,6 @@ function label = test_group_label(battery_no, primary_set, secondary_set)
     end
 end
 
-function tf = matches_plot_request(battery_no, cycle_idx, plot_requests)
-    tf = false;
-    if isempty(plot_requests)
-        return;
-    end
-    tf = any(plot_requests(:,1) == battery_no & plot_requests(:,2) == cycle_idx);
-end
 
 function [y_pred, y_std] = predict_gpr_with_std(model, X)
     try
@@ -1113,100 +1082,6 @@ function [M, mem_out] = evaluate_adaptive_bayes_theta(D, mem_in, P)
     end
 end
 
-function make_cycle_diagnostic_plot(D, M_ekf, M_gpr, M_bayes, mem_in, mem_out, plot_mode, save_plot_files, plot_dir)
-
-    batt = D.battery_no;
-    cyc  = D.cycle_idx;
-
-    if strcmpi(plot_mode, 'residual_only')
-        f = figure('Color','w','Position',[120 120 1200 500]);
-        tiledlayout(1,2,'Padding','compact','TileSpacing','compact');
-
-        nexttile; hold on;
-        plot(D.t, D.SOC_true - D.SOC_est, 'k-', 'LineWidth', 1.5, 'DisplayName', 'True residual');
-        plot(D.t, D.residual_pred, 'm--', 'LineWidth', 1.2, 'DisplayName', 'Pred residual raw');
-        plot(D.t, D.residual_pred_f, 'c-', 'LineWidth', 1.2, 'DisplayName', 'Pred residual filt');
-        plot(D.t, M_bayes.residual_bayes, 'r-', 'LineWidth', 1.4, 'DisplayName', 'Applied residual');
-        yline(0,'k:');
-        xlabel('Time');
-        ylabel('Residual');
-        title(sprintf('Residuals | Batt %d Cycle %d', batt, cyc));
-        legend('Location','best');
-        grid on;
-
-        nexttile; hold on;
-        plot(D.t, M_bayes.alpha, 'b-', 'LineWidth', 1.4, 'DisplayName', '\alpha bayes');
-        plot(D.t, M_bayes.sigma_ekf, 'r-', 'LineWidth', 1.2, 'DisplayName', '\sigma_{EKF}');
-        plot(D.t, M_bayes.sigma_gpr, 'm-', 'LineWidth', 1.2, 'DisplayName', '\sigma_{GPR}');
-        xlabel('Time');
-        ylabel('Weight / Uncertainty');
-        title(sprintf('Weighting | mem in = [%.3f %.3f] -> out = [%.3f %.3f]', ...
-            mem_in.ekf_bad_bias, mem_in.gpr_bad_bias, mem_out.ekf_bad_bias, mem_out.gpr_bad_bias));
-        legend('Location','best');
-        grid on;
-
-    else
-        f = figure('Color','w','Position',[80 80 1400 900]);
-        tiledlayout(2,2,'Padding','compact','TileSpacing','compact');
-
-        nexttile; hold on;
-        plot(D.t, D.SOC_true, 'k-', 'LineWidth', 1.8, 'DisplayName', 'True SOC');
-        plot(D.t, D.SOC_est, 'b--', 'LineWidth', 1.2, 'DisplayName', 'EKF');
-        plot(D.t, D.SOC_gpr, 'm-', 'LineWidth', 1.2, 'DisplayName', 'Raw GPR');
-        plot(D.t, M_bayes.SOC, 'r-', 'LineWidth', 1.5, 'DisplayName', 'Adaptive Bayes');
-        xlabel('Time');
-        ylabel('SOC');
-        title(sprintf('SOC | Batt %d Cycle %d', batt, cyc));
-        legend('Location','best');
-        grid on;
-
-        nexttile; hold on;
-        plot(D.t, D.SOC_true - D.SOC_est, 'k-', 'LineWidth', 1.4, 'DisplayName', 'True residual');
-        plot(D.t, D.residual_pred, 'm--', 'LineWidth', 1.1, 'DisplayName', 'Pred residual raw');
-        plot(D.t, D.residual_pred_f, 'c-', 'LineWidth', 1.2, 'DisplayName', 'Pred residual filt');
-        plot(D.t, M_bayes.residual_bayes, 'r-', 'LineWidth', 1.3, 'DisplayName', 'Applied residual');
-        yline(0,'k:');
-        xlabel('Time');
-        ylabel('Residual');
-        title('Residual correction');
-        legend('Location','best');
-        grid on;
-
-        nexttile; hold on;
-        plot(D.t, M_bayes.alpha, 'b-', 'LineWidth', 1.4, 'DisplayName', '\alpha bayes');
-        plot(D.t, M_bayes.sigma_ekf, 'r-', 'LineWidth', 1.2, 'DisplayName', '\sigma_{EKF}');
-        plot(D.t, M_bayes.sigma_gpr, 'm-', 'LineWidth', 1.2, 'DisplayName', '\sigma_{GPR}');
-        xlabel('Time');
-        ylabel('Weight / Uncertainty');
-        title('Adaptive uncertainty weighting');
-        legend('Location','best');
-        grid on;
-
-        nexttile; axis off;
-        txt = {
-            sprintf('Battery = %d', batt)
-            sprintf('Cycle   = %d', cyc)
-            ' '
-            sprintf('EKF RMSE         = %.6f', M_ekf.rmse)
-            sprintf('Raw GPR RMSE     = %.6f', M_gpr.rmse)
-            sprintf('Adaptive Bayes   = %.6f', M_bayes.rmse)
-            ' '
-            sprintf('EKF late         = %.6f', M_ekf.rmse_late)
-            sprintf('GPR late         = %.6f', M_gpr.rmse_late)
-            sprintf('Bayes late       = %.6f', M_bayes.rmse_late)
-            ' '
-            sprintf('mem in  = [ekf %.3f | gpr %.3f | alpha %.3f]', ...
-                mem_in.ekf_bad_bias, mem_in.gpr_bad_bias, mem_in.alpha_prev)
-            sprintf('mem out = [ekf %.3f | gpr %.3f | alpha %.3f]', ...
-                mem_out.ekf_bad_bias, mem_out.gpr_bad_bias, mem_out.alpha_prev)
-            };
-        text(0.02, 0.98, txt, 'VerticalAlignment','top', 'FontName','Consolas', 'FontSize', 11);
-    end
-
-    if save_plot_files
-        exportgraphics(f, fullfile(plot_dir, sprintf('battery_%03d_cycle_%04d_%s.png', batt, cyc, lower(plot_mode))), 'Resolution', 250);
-    end
-end
 
 function y = smooth_residual_causal(x, alpha)
     x = x(:);

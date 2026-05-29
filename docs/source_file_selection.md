@@ -23,7 +23,7 @@ The selected scripts were identified by matching the manuscript sections, genera
 
 ## Derived Outputs
 
-Generated CSV outputs are intentionally not tracked. The code can regenerate outputs such as:
+Curated generated CSV outputs are tracked under `results/csv/`. The code can regenerate outputs such as:
 
 - `fusion_full_model.mat` compact EKF/GPR configuration.
 - `Q_nom_init_first_cycle_all_batteries.mat` battery-specific initial capacity values.
@@ -41,7 +41,7 @@ The following file classes were intentionally excluded:
 - Large MATLAB workspace files such as `battery_workspace_core.mat`.
 - MATLAB `.fig` files and large plotting packages.
 - Raw battery datasets.
-- Generated CSV result files.
+- Uncurated/generated CSV result files outside `results/csv/`.
 - Generated figure files and plotting-only scripts.
 - Per-battery secondary output folders.
 - Python translations/experiments not used in the manuscript workflow.

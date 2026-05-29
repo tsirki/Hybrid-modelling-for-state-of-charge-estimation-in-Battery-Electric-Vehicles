@@ -13,7 +13,9 @@ slprj/
 *.mlx.bak
 data/raw/
 data/external/
-results/
+results/*
+!results/csv/
+!results/csv/**
 figures/
 workspaces/
 # Generated MATLAB output folders

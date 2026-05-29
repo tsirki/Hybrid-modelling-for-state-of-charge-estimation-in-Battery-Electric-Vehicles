@@ -1,8 +1,8 @@
 # Reproducibility Checklist
 
 This repository is a curated code release. It does not include raw MATR
-battery files, generated CSV result tables, generated figure files, or large
-MATLAB workspaces.
+battery files, generated figure files, MATLAB Live Scripts, or large MATLAB
+workspaces. Curated CSV result snapshots are included under `results/csv/`.
 
 ## Required Local Inputs
 
@@ -48,4 +48,5 @@ workflow:
 - Plot image export and per-battery CSV dumping are disabled by default for the
   secondary adaptive Bayesian script to keep the release lightweight.
 - Scripts write generated CSV/MAT outputs to the current MATLAB working
-  directory. These generated artifacts are intentionally excluded from Git.
+  directory. The checked-in CSV snapshots under `results/csv/` are the curated
+  reference outputs from the release workflow.
