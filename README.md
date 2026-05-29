@@ -23,7 +23,6 @@ The workflow combines an Extended Kalman Filter (EKF), sparse Gaussian Process R
 ## Data Availability
 
 https://data.matr.io/1/projects/5c48dd2bc625d700019f3204
-Large MATLAB workspace files and raw battery datasets are not included in this repository. In the original analysis, files such as `battery_workspace_core.mat` were multi-GB workspaces and are intentionally excluded from GitHub.
 
 Generated figure files, MATLAB Live Scripts, and large workspace artifacts are intentionally excluded to keep the repository lightweight. Curated CSV result snapshots are included under `results/csv/` so the numerical outputs can be inspected without rerunning the full MATLAB workflow.
 
@@ -50,8 +49,6 @@ The scripts are organized in the order used for the paper:
 7. Evaluate transferability, robustness, and adaptive Bayesian fusion.
 
 ## Notes
-
-The original MATLAB Live Scripts (`.mlx`) were converted to plain MATLAB scripts (`.m`) for easier review, diffing, and reuse in GitHub.
 
 `preprocessing.m` is preserved unchanged because it is externally sourced from
 https://github.com/rdbraatz/data-driven-prediction-of-battery-cycle-life-before-capacity-degradation/blob/master/LoadData.m.
