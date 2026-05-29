@@ -19,6 +19,7 @@ The workflow combines an Extended Kalman Filter (EKF), sparse Gaussian Process R
 
 ## Data Availability
 
+https://data.matr.io/1/projects/5c48dd2bc625d700019f3204
 Large MATLAB workspace files and raw battery datasets are not included in this repository. In the original analysis, files such as `battery_workspace_core.mat` were multi-GB workspaces and are intentionally excluded from GitHub.
 
 Generated CSV outputs, plotting-only scripts, and figure files are intentionally excluded to keep the repository lightweight. Some core analysis scripts may still contain inline diagnostic plotting blocks from the original research workflow.
@@ -47,8 +48,4 @@ The scripts are organized in the order used for the paper:
 
 ## Notes
 
-The original MATLAB Live Scripts (`.mlx`) were converted to plain MATLAB scripts (`.m`) for easier review, diffing, and reuse in GitHub.
-
-`preprocessing.m` is preserved unchanged because it is externally sourced. The
-workflow wrapper can call it, but the repository cleanup intentionally avoids
-editing that file.
+`preprocessing.m` is preserved unchanged because it is externally sourced https://github.com/rdbraatz/data-driven-prediction-of-battery-cycle-life-before-capacity-degradation/blob/master/LoadData.m.
