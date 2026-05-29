@@ -54,17 +54,7 @@ fprintf('Working directory: %s\n', pwd);
 fprintf('Code directory:    %s\n\n', script_dir);
 
 if cfg.runPreprocessing
-    run_workflow_step('Raw preprocessing', ...
-        fullfile(script_dir, 'preprocessing', 'preprocessing.m'), {});
-
-    if exist('t_all', 'var') == 1 && exist('I_all', 'var') == 1 && ...
-       exist('V_all', 'var') == 1 && exist('Q_all', 'var') == 1
-        save('battery_workspace_core.mat', ...
-            't_all','I_all','V_all','Q_all','-v7.3');
-        fprintf('Saved battery_workspace_core.mat from preprocessing workspace.\n\n');
-    else
-        error('Preprocessing finished, but core variables t_all/I_all/V_all/Q_all were not found.');
-    end
+    run_preprocessing_step(fullfile(script_dir, 'preprocessing', 'preprocessing.m'));
 end
 
 if cfg.createFusionConfig
@@ -159,10 +149,30 @@ for i = 1:numel(required_files)
     end
 end
 
-[script_folder, script_name] = fileparts(script_path);
+[script_folder, ~] = fileparts(script_path);
 addpath(script_folder);
 work_dir = pwd;
 cleanup_obj = onCleanup(@() cd(work_dir));
-evalin('caller', script_name);
+run(script_path);
 fprintf('Completed: %s\n\n', label);
+end
+
+function run_preprocessing_step(script_path)
+fprintf('--- Raw preprocessing ---\n');
+
+[script_folder, ~] = fileparts(script_path);
+addpath(script_folder);
+work_dir = pwd;
+cleanup_obj = onCleanup(@() cd(work_dir));
+run(script_path);
+
+if exist('t_all', 'var') == 1 && exist('I_all', 'var') == 1 && ...
+   exist('V_all', 'var') == 1 && exist('Q_all', 'var') == 1
+    save('battery_workspace_core.mat', ...
+        't_all', 'I_all', 'V_all', 'Q_all', '-v7.3');
+    fprintf('Saved battery_workspace_core.mat from preprocessing workspace.\n');
+    fprintf('Completed: Raw preprocessing\n\n');
+else
+    error('Preprocessing finished, but core variables t_all/I_all/V_all/Q_all were not found.');
+end
 end
