@@ -38,6 +38,22 @@ The raw battery dataset is available from the MATR repository:
 
 https://data.matr.io/1/projects/5c48dd2bc625d700019f3204
 
+After downloading the three MATR batch files, place them in the MATLAB
+working directory used for reproduction. The simplest option is the
+repository root, i.e. the same folder that contains this `README.md`.
+
+Rename the downloaded files to the names expected by `preprocessing.m`:
+
+```text
+MATR_batch_20170512.mat
+MATR_batch_20170630.mat
+MATR_batch_20180412.mat
+```
+
+These correspond to the MATR batch files dated 2017-05-12, 2017-06-30,
+and 2018-04-12, respectively. The raw files are intentionally ignored by
+Git and should remain local.
+
 The raw and intermediate MATLAB workspace files can be large. In particular, `battery_workspace_core.mat` is expected locally and is not included in GitHub.
 
 ## Reproducing the Workflow
