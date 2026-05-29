@@ -149,22 +149,22 @@ for i = 1:numel(required_files)
     end
 end
 
-[script_folder, ~] = fileparts(script_path);
+[script_folder, script_name] = fileparts(script_path);
 addpath(script_folder);
 work_dir = pwd;
 cleanup_obj = onCleanup(@() cd(work_dir));
-run(script_path);
+evalin('caller', script_name);
 fprintf('Completed: %s\n\n', label);
 end
 
 function run_preprocessing_step(script_path)
 fprintf('--- Raw preprocessing ---\n');
 
-[script_folder, ~] = fileparts(script_path);
+[script_folder, script_name] = fileparts(script_path);
 addpath(script_folder);
 work_dir = pwd;
 cleanup_obj = onCleanup(@() cd(work_dir));
-run(script_path);
+eval(script_name);
 
 if exist('t_all', 'var') == 1 && exist('I_all', 'var') == 1 && ...
    exist('V_all', 'var') == 1 && exist('Q_all', 'var') == 1
