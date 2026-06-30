@@ -158,7 +158,7 @@ gprKernel = 'ardsquaredexponential';
 gprBasis  = 'constant';
 gprFitMethod = 'sr';
 gprPredictMethod = 'sr';
-gprActiveSetSize = 25;
+gprActiveSetSize = 15;
 gprActiveSetMethod = 'sgma';
 gprOptimizer = 'quasinewton';
 
