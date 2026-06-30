@@ -1,6 +1,11 @@
 %% preprocessing.m
 % -------------------------------------------------------------------------
 % Author: Konstantinos Tsirkinidis
+% Third-party attribution:
+% Parts of the data-loading and batch-combination logic were adapted from
+% LoadData.m by Severson, Attia, and co-authors:
+% https://github.com/rdbraatz/data-driven-prediction-of-battery-cycle-life-before-capacity-degradation
+% See NOTICE.md for full attribution and license-scope information.
 % Date: 2025-11-07
 % Article: Hybrid Modeling for State of Charge Estimation in 
 % Battery Electric Vehicles: Balancing Accuracy, Efficiency, and 
